@@ -10,11 +10,7 @@ const { Op } = require("sequelize");
 const response = require("../utils/http-response");
 const CONSTANT = require("../constant/config");
 const { v4: uuidv4 } = require("uuid");
-const {
-  chat_room_receiver_info,
-  get_room_receiver,
-  chat_room_messages,
-} = require("../utils/helpers");
+const { chat_room_receiver_info, get_room_receiver, chat_room_messages, } = require("../utils/helpers");
 const { validationResult } = require("express-validator");
 
 //create chat room
@@ -223,7 +219,7 @@ exports.get_chat_rooms_messages = async (req, res) => {
         },
       });
     } else {
-      const prevRecordsCount = await chat_messages.count({
+      const prevRecordsCount = await chat_messages.count({ 
         where: {
           chat_room_id,
           cm_id: {
@@ -407,10 +403,20 @@ exports.delete_room_message = async (req, res) => {
 };
 
 
-exports.location = async (req,res) => {
+exports.location = async (req, res) => {
   try {
-    console.log("Welcome to the Ghostland!!!");
+    const PK = req.body;
+    // Respond with the received data
+    res.status(200).json({
+      success: true,
+      message: 'Data received successfully',
+      data: PK,
+    });
   } catch (err) {
-    response.send_json(res,false, err, CONSTANT.email.HTTP_SERVER_ERROR);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: err.message,
+    });
   }
-}
+};

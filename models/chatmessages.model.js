@@ -28,7 +28,7 @@ module.exports = (sequelize_connect, DataType) => {
         comment : '1 means delete 0 means not deleted'
       },
       type : {
-        type: DataType.ENUM("text", "video", "image"),
+        type: DataType.ENUM("text", "video", "image", "location"),
         defaultValue: "text",
         AFTER:"account_status"
       },
