@@ -12,9 +12,6 @@ module.exports = (app) => {
   // query loggedIn user chat rooms
   router.get("/chat_rooms", isAuthorise, chat.get_chat_rooms);
 
-  // Store location Coordinates for chat process
-  router.post("/location", isAuthorise, chat.location);
-
   // query loggedIn user all chats rooms temporary remove
   router.post(
     "/chat_rooms_all_messages/",

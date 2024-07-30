@@ -10,7 +10,11 @@ const { Op } = require("sequelize");
 const response = require("../utils/http-response");
 const CONSTANT = require("../constant/config");
 const { v4: uuidv4 } = require("uuid");
-const { chat_room_receiver_info, get_room_receiver, chat_room_messages, } = require("../utils/helpers");
+const {
+  chat_room_receiver_info,
+  get_room_receiver,
+  chat_room_messages,
+} = require("../utils/helpers");
 const { validationResult } = require("express-validator");
 
 //create chat room
@@ -219,7 +223,7 @@ exports.get_chat_rooms_messages = async (req, res) => {
         },
       });
     } else {
-      const prevRecordsCount = await chat_messages.count({ 
+      const prevRecordsCount = await chat_messages.count({
         where: {
           chat_room_id,
           cm_id: {
@@ -306,9 +310,8 @@ exports.create_message = async (req, res) => {
       response.send_json(res, false, `User is blocked by support team, you can't send message to this user.`, CONSTANT.HTTP_SUCCESS);
       return; 
     }
-    const message = req.body.message;
-
-    
+    const jsonMessage = req.body.message;
+    const message = JSON.stringify(jsonMessage);
     // message data
     const msg_data = {
       message_id: uuidv4(),
@@ -399,24 +402,5 @@ exports.delete_room_message = async (req, res) => {
     );
   } catch (err) {
     response.send_json(res, false, err.message, CONSTANT.HTTP_SERVER_ERROR);
-  }
-};
-
-
-exports.location = async (req, res) => {
-  try {
-    const PK = req.body;
-    // Respond with the received data
-    res.status(200).json({
-      success: true,
-      message: 'Data received successfully',
-      data: PK,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: err.message,
-    });
   }
 };
