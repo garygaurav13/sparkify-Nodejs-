@@ -3,7 +3,7 @@ module.exports = (app) => {
   const isAuthorise = require("../middleware/auth");
   const validChatRoom = require("../middleware/validateChatRoom");
   const { check } = require("express-validator");
-
+  const multerMiddleware = require('../middleware/multer');
   var router = require("express").Router();
 
   //create room
@@ -38,6 +38,7 @@ module.exports = (app) => {
       check("room_id").notEmpty().withMessage("Room ID is required"),
       check("message").notEmpty().withMessage("Message is required"),
     ],
+    multerMiddleware,
     isAuthorise,
     validChatRoom,
     chat.create_message

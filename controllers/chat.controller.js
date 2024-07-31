@@ -292,40 +292,54 @@ exports.create_message = async (req, res) => {
       return;
     }
 
-    // user info > sender ID means logged in user
+    // User info > sender ID means logged in user
     const sender_id = res.user.user_id;
     const room_data = req.room_info;
     const chat_room_id = room_data.chat_room_id;
-    //check if users blocked
-    let roomStatus = await chat_rooms.findOne({where:{chat_room_id:chat_room_id}});
-    if(roomStatus.chat_room_status != "active"){
+
+    // Check if users are blocked
+    let roomStatus = await chat_rooms.findOne({ where: { chat_room_id: chat_room_id } });
+    if (roomStatus.chat_room_status != "active") {
       response.send_json(res, false, `You can't send message to this user`, CONSTANT.HTTP_SUCCESS);
-      return; 
+      return;
     }
 
     const receiver_id = get_room_receiver(room_data.chat_room_users, sender_id);
-    //check for receiver is not blocked by admin
-    const recIsBlockbyAdmin = await users.findOne({where:{user_id:receiver_id}});
-    if(recIsBlockbyAdmin.status != "1"){
+
+    // Check if the receiver is blocked by admin
+    const recIsBlockbyAdmin = await users.findOne({ where: { user_id: receiver_id } });
+    if (recIsBlockbyAdmin.status != "1") {
       response.send_json(res, false, `User is blocked by support team, you can't send message to this user.`, CONSTANT.HTTP_SUCCESS);
-      return; 
+      return;
     }
-    const jsonMessage = req.body.message;
-    const message = JSON.stringify(jsonMessage);
-    // message data
+
+    const type = req.body.type;
+    const message = req.body.message;
+
+    let finalMessage;
+
+    if (req.file) {
+      // If a file is uploaded, set the message to the S3 URL of the uploaded file
+      finalMessage = req.file.location;
+    } else {
+      // Otherwise, use the provided message content
+      finalMessage = JSON.stringify(message);
+    }
+    
+    // Message data
     const msg_data = {
       message_id: uuidv4(),
       sender_id,
       receiver_id,
       chat_room_id,
-      message,
+      message: finalMessage,
+      type,
     };
 
     const createMessage = await chat_messages.create(msg_data);
-
     const room_message = await chat_room_messages(createMessage.message_id);
 
-    // sending response
+    // Sending response
     response.send_json(
       res,
       true,
