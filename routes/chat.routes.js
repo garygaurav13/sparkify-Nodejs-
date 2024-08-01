@@ -38,7 +38,7 @@ module.exports = (app) => {
       check("room_id").notEmpty().withMessage("Room ID is required"),
       check("message").notEmpty().withMessage("Message is required"),
     ],
-    multerMiddleware,
+    multerMiddleware("file"),
     isAuthorise,
     validChatRoom,
     chat.create_message

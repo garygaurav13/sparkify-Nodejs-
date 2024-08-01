@@ -30,8 +30,7 @@ const s3Storage = multerS3({
     },
   });
   
-
-  const upload = multer({
+  const upload = (fieldName) => multer({
     storage: s3Storage,
     limits: { fileSize: 10 * 1000 * 1000 },
     metadata: (req, file, cb) => {
@@ -49,6 +48,6 @@ const s3Storage = multerS3({
         return cb(new Error("Only .png, .jpg and .jpeg format allowed!"));
       }
     },
-  }).single("file");
+  }).single(fieldName);
 
 module.exports = upload;

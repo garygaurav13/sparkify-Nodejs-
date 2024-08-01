@@ -5,12 +5,11 @@ module.exports = app => {
     const isAuthorise = require("../middleware/auth"); 
     const profileValidate = require("../middleware/profileValidate");
     const paaswordValidate = require("../middleware/passwordchangevalidate");
-  
+    const multerMiddleware = require('../middleware/multer');
   
     var router = require("express").Router();
-  
 
-     //User Profile get     
+    //User Profile get     
     router.get("/",isAuthorise, profile.get);
 
     //get other user profile     
@@ -23,17 +22,16 @@ module.exports = app => {
     router.put("/",isAuthorise, profile.edit);  
 
     //upload profile image
-    router.put("/avatar",isAuthorise, profile.avatar);  
+    router.put("/avatar", multerMiddleware("avatar"),isAuthorise, profile.avatar);  
 
-     //change password
-     router.put("/password",isAuthorise,paaswordValidate, profile.password); 
+    //change password
+    router.put("/password",isAuthorise,paaswordValidate, profile.password); 
 
-     //get all generation
-     router.get("/generation", profile.generation);
+    //get all generation
+    router.get("/generation", profile.generation);
 
-     //profile visibilty managed by user
-     router.post("/profile-visibility",isAuthorise,profile.visibility);
-     
+    //profile visibilty managed by user
+    router.post("/profile-visibility",isAuthorise,profile.visibility);
 
     // calling users endpoint using router
     app.use('/api/profile', router);
