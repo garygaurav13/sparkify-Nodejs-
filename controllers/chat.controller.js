@@ -281,6 +281,65 @@ exports.get_chat_rooms_messages = async (req, res) => {
 };
 
 // create message
+// exports.create_message = async (req, res) => {
+//   try {
+//     // Check for validation errors
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       response.send_json(res, false, null, CONSTANT.HTTP_SUCCESS, {
+//         errors: errors.array(),
+//       });
+//       return;
+//     }
+
+//     // user info > sender ID means logged in user
+//     const sender_id = res.user.user_id;
+//     const room_data = req.room_info;
+//     const chat_room_id = room_data.chat_room_id;
+//     //check if users blocked
+//     let roomStatus = await chat_rooms.findOne({where:{chat_room_id:chat_room_id}});
+//     if(roomStatus.chat_room_status != "active"){
+//       response.send_json(res, false, `You can't send message to this user`, CONSTANT.HTTP_SUCCESS);
+//       return; 
+//     }
+
+//     const receiver_id = get_room_receiver(room_data.chat_room_users, sender_id);
+//     //check for receiver is not blocked by admin
+//     const recIsBlockbyAdmin = await users.findOne({where:{user_id:receiver_id}});
+//     if(recIsBlockbyAdmin.status != "1"){
+//       response.send_json(res, false, `User is blocked by support team, you can't send message to this user.`, CONSTANT.HTTP_SUCCESS);
+//       return; 
+//     }
+//     const message = req.body.message;
+
+    
+//     // message data
+//     const msg_data = {
+//       message_id: uuidv4(),
+//       sender_id,
+//       receiver_id,
+//       chat_room_id,
+//       message,
+//     };
+
+//     const createMessage = await chat_messages.create(msg_data);
+
+//     const room_message = await chat_room_messages(createMessage.message_id);
+
+//     // sending response
+//     response.send_json(
+//       res,
+//       true,
+//       `new message created.`,
+//       CONSTANT.HTTP_SUCCESS,
+//       { ...room_message }
+//     );
+//   } catch (err) {
+//     response.send_json(res, false, err.message, CONSTANT.HTTP_SUCCESS);
+//   }
+// };  
+
+// create message
 exports.create_message = async (req, res) => {
   try {
     // Check for validation errors
@@ -319,8 +378,9 @@ exports.create_message = async (req, res) => {
     let finalMessage;
 
     if (req.file) {
-      // If a file is uploaded, set the message to the S3 URL of the uploaded file
-      finalMessage = req.file.location;
+      // Otherwise, use the provided message content
+      finalMessage = JSON.stringify(message);
+      
     } else {
       // Otherwise, use the provided message content
       finalMessage = JSON.stringify(message);
@@ -351,7 +411,6 @@ exports.create_message = async (req, res) => {
     response.send_json(res, false, err.message, CONSTANT.HTTP_SUCCESS);
   }
 };
-
 // delete chat rooms
 exports.delete_room_message = async (req, res) => {
   try {
@@ -416,5 +475,79 @@ exports.delete_room_message = async (req, res) => {
     );
   } catch (err) {
     response.send_json(res, false, err.message, CONSTANT.HTTP_SERVER_ERROR);
+  }
+};
+
+
+// Message photo upload 
+exports.create_message_photo = async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      response.send_json(res, false, null, CONSTANT.HTTP_SUCCESS, {
+        errors: errors.array(),
+      });
+      return;
+    }
+
+    // User info > sender ID means logged in user
+    const sender_id = res.user.user_id;
+    const room_data = req.room_info;
+    const chat_room_id = room_data.chat_room_id;
+
+    // Check if users are blocked
+    let roomStatus = await chat_rooms.findOne({ where: { chat_room_id: chat_room_id } });
+    if (roomStatus.chat_room_status != "active") {
+      response.send_json(res, false, `You can't send message to this user`, CONSTANT.HTTP_SUCCESS);
+      return;
+    }
+
+    const receiver_id = get_room_receiver(room_data.chat_room_users, sender_id);
+
+    // Check if the receiver is blocked by admin
+    const recIsBlockbyAdmin = await users.findOne({ where: { user_id: receiver_id } });
+    if (recIsBlockbyAdmin.status != "1") {
+      response.send_json(res, false, `User is blocked by support team, you can't send message to this user.`, CONSTANT.HTTP_SUCCESS);
+      return;
+    }
+
+    const type = req.body.type;
+    const message = req.body.message;
+    // console.log(message);
+
+    let finalMessage;
+
+    if (req.file) {
+      // If a file is uploaded, set the message to the S3 URL of the uploaded file
+      finalMessage = req.file.location;
+    }
+    console.log(req.file);
+    
+    // Message data
+    const msg_data = {
+      message_id: uuidv4(),
+      sender_id,
+      receiver_id,
+      chat_room_id,
+      message: finalMessage,
+      type,
+    };
+
+    
+
+    const createMessage = await chat_messages.create(msg_data);
+    const room_message = await chat_room_messages(createMessage.message_id);
+
+    // Sending response
+    response.send_json(
+      res,
+      true,
+      `new message created.`,
+      CONSTANT.HTTP_SUCCESS,
+      { ...room_message }
+    );
+  } catch (err) {
+    response.send_json(res, false, err.message, CONSTANT.HTTP_SUCCESS);
   }
 };

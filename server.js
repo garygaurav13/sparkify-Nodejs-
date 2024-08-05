@@ -107,6 +107,7 @@ io.on("connection", (socket) => {
     const { room_id } = data;
     io.to(room_id).emit("delete_this_msg", { room_id, ...data });
   });
+
   socket.on("typing", ({ room_id, user_id }) => {
     io.to(room_id).emit("user_typing", { room_id, user_id });
   });

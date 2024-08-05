@@ -4,6 +4,7 @@ module.exports = (app) => {
   const validChatRoom = require("../middleware/validateChatRoom");
   const { check } = require("express-validator");
   const multerMiddleware = require('../middleware/multer');
+
   var router = require("express").Router();
 
   //create room
@@ -38,11 +39,19 @@ module.exports = (app) => {
       check("room_id").notEmpty().withMessage("Room ID is required"),
       check("message").notEmpty().withMessage("Message is required"),
     ],
-    multerMiddleware("file"),
     isAuthorise,
     validChatRoom,
     chat.create_message
   );
+
+  //router for photo share 
+  router.post("/share_photo", 
+    multerMiddleware("file"),
+    isAuthorise,
+    validChatRoom,
+    chat.create_message_photo
+  );
+
 
   //delete room message
   router.post("/delete_message/", [
