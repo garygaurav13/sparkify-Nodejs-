@@ -381,7 +381,9 @@ exports.create_message = async (req, res) => {
       // Otherwise, use the provided message content
       finalMessage = JSON.stringify(message);
       
-    } else {
+    } else if("text"==type){
+      finalMessage = message;
+    }else {
       // Otherwise, use the provided message content
       finalMessage = JSON.stringify(message);
     }
@@ -411,6 +413,7 @@ exports.create_message = async (req, res) => {
     response.send_json(res, false, err.message, CONSTANT.HTTP_SUCCESS);
   }
 };
+
 // delete chat rooms
 exports.delete_room_message = async (req, res) => {
   try {
@@ -514,7 +517,6 @@ exports.create_message_photo = async (req, res) => {
 
     const type = req.body.type;
     const message = req.body.message;
-    // console.log(message);
 
     let finalMessage;
 
@@ -522,7 +524,6 @@ exports.create_message_photo = async (req, res) => {
       // If a file is uploaded, set the message to the S3 URL of the uploaded file
       finalMessage = req.file.location;
     }
-    console.log(req.file);
     
     // Message data
     const msg_data = {
@@ -533,8 +534,6 @@ exports.create_message_photo = async (req, res) => {
       message: finalMessage,
       type,
     };
-
-    
 
     const createMessage = await chat_messages.create(msg_data);
     const room_message = await chat_room_messages(createMessage.message_id);
