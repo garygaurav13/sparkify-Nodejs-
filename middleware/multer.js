@@ -32,7 +32,6 @@ const s3Storage = multerS3({
   },
 });
 
-
 const upload = (fieldName) => multer({
   storage: s3Storage,
   limits: { fileSize: 10 * 1000 * 1000 },
